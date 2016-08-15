@@ -3,7 +3,12 @@ require 'cinch/commands/command'
 
 describe Cinch::Commands::Command do
   let(:command_name) { 'foo' }
-  let(:arguments)    { {name: :string, level: :integer, flag: %w[a o v]} }
+  let(:arguments)    {
+    [{name: "NAME", format: :string, optional: false},
+     {name: "LEVEL", format: :integer, optional: false},
+     {name: "FLAG", format: %w[a o v], optional: false}
+    ]
+  }
 
   let(:summary)     { 'Foo command' }
   let(:description) { 'This is the foo command' }
@@ -63,7 +68,7 @@ describe Cinch::Commands::Command do
     subject { command.usage }
 
     it "should include the command name" do
-      subject.start_with?(command_name).should be_true
+      subject.start_with?("!#{command_name}").should be_true
     end
 
     it "should include the upper-case argument names" do

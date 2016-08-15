@@ -1,4 +1,4 @@
-require 'cinch/commands/commands'
+require "cinch/commands/commands"
 
 module Cinch
   module Commands
@@ -6,21 +6,14 @@ module Cinch
     # Generic `!help` command that lists all commands.
     #
     class Help
-
       include Cinch::Commands
 
-      command :help, {command: :string},
-              summary:     %{Displays help information for the COMMAND},
-              description: %{
-                Finds the COMMAND and prints the usage and description for the
-                COMMAND.
-              }
-
-      command :help, {},
-              summary: "Lists available commands",
-              description: %{
-                If no COMMAND argument is given, then all commands will be listed.
-              }
+      command :help, [{ name: "COMMAND", format: :string, optional: true }],
+              summary: "List all commands or displays help information for the"\
+              " given COMMAND",
+              description: "List all possible commands when supplied with no"\
+              " arguments otherwise finds the specified COMMAND and prints the"\
+              " usage and description."
 
       #
       # Displays a list of commands or the help information for a specific
@@ -32,30 +25,51 @@ module Cinch
       # @param [String] command
       #   The specific command to list help information for.
       #
-      def help(m,command=nil)
+      def help(m, command)
         if command
           found = commands_named(command)
 
           if found.empty?
-            m.reply "help: Unknown command #{command.dump}"
+            respond(m, "help: Unknown command #{command.dump}")
           else
             # print all usages
-            found.each { |cmd| m.reply cmd.usage }
+            found.each { |cmd| respond cmd.usage }
 
             # print the description of the first command
-            m.reply ''
-            m.reply found.first.description
+            respond(m, "")
+            respond(m, found.first.description)
           end
         else
           each_command do |cmd|
-            m.reply "#{cmd.usage} - #{cmd.summary}"
+            respond(m, "#{cmd.usage} - #{cmd.summary}")
           end
+        end
+      end
+
+      # Send the response back to the user according to the config value
+      # :help_response. It can be :notice to send back a notice to the user,
+      # :send to query the user or :reply or nil to reply in the channel/query
+      # it received the help request in.
+      #
+      # @param [Cinch::Message] m
+      #   The message that invoked `!help`.
+      #
+      # @param [String] text
+      #   The message to send back as a response.
+      #
+      def respond(m, text)
+        case config[:help_response]
+        when :notice
+          m.user.notice text
+        when :send
+          m.user.send text
+        else
+          m.reply text
         end
       end
 
       protected
 
-      #
       # Enumerates over every command.
       #
       # @yield [command]
@@ -71,9 +85,7 @@ module Cinch
         return enum_for(__method__) unless block_given?
 
         bot.config.plugins.plugins.each do |plugin|
-          if plugin < Cinch::Commands
-            plugin.commands.each(&block)
-          end
+          plugin.commands.each(&block) if plugin < Cinch::Commands
         end
       end
 
@@ -89,7 +101,6 @@ module Cinch
       def commands_named(name)
         each_command.select { |command| command.name == name }
       end
-
     end
   end
 end

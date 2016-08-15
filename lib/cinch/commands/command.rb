@@ -4,24 +4,23 @@ module Cinch
     # @api semipublic
     #
     class Command
-
       # Argument formats
       ARG_FORMATS = {
         string:  /\S+/,
         integer: /\d+/,
         float:   /\d*\.\d+/,
         text:    /.+/
-      }
+      }.freeze
 
       # Name of the command
       attr_reader :name
-      
-      # Argument names/formats
+
+      # Argument list
       attr_reader :arguments
-      
+
       # Short summary of the command
       attr_reader :summary
-      
+
       # Long description of the command
       attr_reader :description
 
@@ -31,8 +30,9 @@ module Cinch
       # @param [Symbol] name
       #   Name of the command.
       #
-      # @param [Hash{Symbol => Symbol,Regexp,String,Array}] arguments
-      #   Arguments names and their formats or possible values.
+      # @param [Array<Hash>] arguments
+      #   A list of argument hashes consisting of the names, formats and wether
+      #   the argument is optional or not.
       #
       # @param [Hash] options
       #   Additional options.
@@ -46,10 +46,10 @@ module Cinch
       # @option options [String] :description
       #   Long description of the command.
       #
-      def initialize(name,arguments,options={})
+      def initialize(name, arguments, options = {})
         @name        = name.to_s
         @arguments   = arguments
-        @aliases     = options.fetch(:aliases,[]).map(&:to_s)
+        @aliases     = options.fetch(:aliases, []).map(&:to_s)
 
         @summary     = options[:summary]
         @description = options[:description]
@@ -73,9 +73,10 @@ module Cinch
       #   arguments.
       #
       def regexp
-        pattern = '(?:' + Regexp.union([@name] + @aliases).source + ')'
+        pattern = "(?:" + Regexp.union([@name] + @aliases).source + ")"
 
-        @arguments.each_value do |format|
+        @arguments.each do |arg|
+          format = arg[:format]
           arg_regexp = case format
                        when Array  then Regexp.union(format)
                        when Regexp then format
@@ -83,13 +84,18 @@ module Cinch
                        else             Regexp.escape(format.to_s)
                        end
 
-          pattern << ' (' << arg_regexp.source << ')'
+          if arg[:optional]
+            pattern << '(?:\s(' << arg_regexp.source << "))?"
+          else
+            pattern << " (" << arg_regexp.source << ")"
+          end
         end
 
         # match the full message
-        pattern << '$'
 
-        return Regexp.new(pattern)
+        pattern << "$"
+
+        Regexp.new(pattern)
       end
 
       #
@@ -99,20 +105,26 @@ module Cinch
       #   The usage string for the command and it's arguments.
       #
       def usage
-        usage = "#{@name}"
+        usage = "!#{@name}"
 
-        @arguments.each do |arg,format|
-          usage << ' ' << case format
-                          when Array  then "[#{format.join('|')}]"
-                          when Regexp then format.source
-                          when Symbol then arg.to_s.upcase
-                          else             format.to_s
-                          end
+        @arguments.each do |arg|
+          name = arg[:name]
+          format = arg[:format]
+          usage << " "
+          use = case format
+                when Array  then "[#{format.join('|')}]"
+                when Regexp then format.source
+                when Symbol then name.to_s.upcase
+                else             format.to_s
+                end
+          usage << if arg[:optional]
+                     "(#{use})"
+                   else
+                     use
+                   end
         end
-
-        return usage
+        usage
       end
-
     end
   end
 end

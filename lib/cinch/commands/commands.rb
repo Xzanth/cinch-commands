@@ -52,7 +52,7 @@ module Cinch
       #                     Grants a certain level of access to the user
       #                   }
       #
-      def command(name,arguments={},options={})
+      def command(name,arguments=[],options={})
         new_command = Command.new(name,arguments,options)
 
         match(new_command.regexp, method: name)

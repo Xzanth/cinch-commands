@@ -5,9 +5,10 @@ description: |
   Also provides a !help command with detailed output.
 
 license: MIT
-authors: Postmodern
-email: postmodern.mod3@gmail.com
-homepage: https://github.com/postmodern/cinch-commands#readme
+authors:
+  - Postmodern
+  - Xzanth
+homepage: https://github.com/Xzanth/cinch-commands
 
 dependencies:
   cinch: ~> 2.0
