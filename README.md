@@ -1,6 +1,6 @@
 # cinch-commands
 
-* [Source](https://github.com/postmodern/cinch-commands)
+* [Original Source](https://github.com/postmodern/cinch-commands)
 * [Issues](https://github.com/postmodern/cinch-commands/issues)
 * [Documentation](http://rubydoc.info/gems/cinch-commands/frames)
 
@@ -25,13 +25,14 @@ Allows defining multiple commands within a Cinch Plugin.
       include Cinch::Plugin
       include Cinch::Commands
 
-      command :foo, {arg1: :string, arg2: :integer},
-                    summary:     "Does foo",
-                    description: %{
-                      ...
-                    }
+      command :foo,
+              [{name: "arg1", format: :string, optional: false},
+               {name: "arg2", format: :integer, optional: false}],
+              summary:     "Does foo",
+              description: "example"\
+              " more info as well"
 
-      command :bar, {name: :string},
+      command :bar, [{ name: "NAME", format: :string, optional: false}],
               aliases: [:b]
 
       def foo(m,arg1,arg2)
