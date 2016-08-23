@@ -33,7 +33,7 @@ module Cinch
             respond(m, "help: Unknown command #{command.dump}")
           else
             # print all usages
-            found.each { |cmd| respond cmd.usage }
+            found.each { |cmd| respond(m, cmd.usage) }
 
             # print the description of the first command
             respond(m, "")
