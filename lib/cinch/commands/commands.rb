@@ -42,6 +42,9 @@ module Cinch
       # @option options [String] :description
       #   The long description for the command.
       #
+      # @option options [Boolean] :op_command
+      #   Whether this command can only be used by operators
+      #
       # @return [Command]
       #   The new command.
       #

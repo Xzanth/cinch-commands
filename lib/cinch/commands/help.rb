@@ -41,6 +41,7 @@ module Cinch
           end
         else
           each_command do |cmd|
+            next if cmd.op_command && !m.channel.opped?(m.user)
             respond(m, "#{cmd.usage} - #{cmd.summary}")
           end
         end

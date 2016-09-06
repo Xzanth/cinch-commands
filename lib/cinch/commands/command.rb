@@ -24,6 +24,9 @@ module Cinch
       # Long description of the command
       attr_reader :description
 
+      # Whether you need to be an operator to use
+      attr_reader :op_command
+
       #
       # Creates a new command.
       #
@@ -53,6 +56,7 @@ module Cinch
 
         @summary     = options[:summary]
         @description = options[:description]
+        @op_command  = options[:op_command] || false
       end
 
       #
